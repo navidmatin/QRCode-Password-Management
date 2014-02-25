@@ -111,6 +111,7 @@ public class MainActivity extends FragmentActivity implements ActionBar.OnNaviga
          * fragment.
          */
         public static final String ARG_SECTION_NUMBER = "section_number";
+        public static final String ARG_SECTION_TITLE = "section_title";
 
         public DummySectionFragment() {
         }
@@ -118,9 +119,20 @@ public class MainActivity extends FragmentActivity implements ActionBar.OnNaviga
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                 Bundle savedInstanceState) {
-            View rootView = inflater.inflate(R.layout.fragment_main_dummy, container, false);
-            TextView dummyTextView = (TextView) rootView.findViewById(R.id.section_label);
-            dummyTextView.setText(Integer.toString(getArguments().getInt(ARG_SECTION_NUMBER)));
+        	View rootView;
+        	int section_number = getArguments().getInt(ARG_SECTION_NUMBER);
+        	switch (section_number) {
+        	case 1:
+        		rootView = inflater.inflate(R.layout.my_passwords, container, false);
+        		break;
+        	case 2:
+        		rootView = inflater.inflate(R.layout.add_password, container, false);
+        		break;
+        	default:
+        		rootView = inflater.inflate(R.layout.fragment_main_dummy, container, false);
+        		break;
+        	}
+            
             return rootView;
         }
     }
