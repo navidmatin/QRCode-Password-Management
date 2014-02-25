@@ -1,5 +1,6 @@
 package com.facelock.facelocker;
 
+import org.jasypt.*;
 import android.annotation.TargetApi;
 import android.app.ActionBar;
 import android.os.Bundle;
@@ -132,7 +133,6 @@ public class MainActivity extends FragmentActivity implements ActionBar.OnNaviga
         		rootView = inflater.inflate(R.layout.fragment_main_dummy, container, false);
         		break;
         	}
-            
             return rootView;
         }
     }
