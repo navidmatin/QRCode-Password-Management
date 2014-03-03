@@ -9,5 +9,7 @@
     <string name="username">Username</string>
     <string name="password">Password</string>
     <string name="add">Add</string>
+    <string name="Application">Application</string>
+    <string name="Login">Login</string>
 
 </resources>

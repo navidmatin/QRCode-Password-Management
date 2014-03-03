@@ -20,8 +20,11 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
+import android.widget.Button;
 import android.widget.ExpandableListView;
 import android.widget.ExpandableListView.OnChildClickListener;
 import android.widget.TextView;
@@ -72,6 +75,13 @@ public class MainActivity extends FragmentActivity implements ActionBar.OnNaviga
     	PasswordManager.getInstance().storeLogin("Google", "Username5", "pass");
     	PasswordManager.getInstance().storeLogin("Youtube", "Username6", "pass");
     	PasswordManager.getInstance().storeLogin("Reddit", "Username7", "pass");
+    	PasswordManager.getInstance().storeLogin("Facebook2", "Username1", "pass");
+    	PasswordManager.getInstance().storeLogin("Facebook2", "Username2", "pass");
+    	PasswordManager.getInstance().storeLogin("Facebook2", "Username3", "pass");
+    	PasswordManager.getInstance().storeLogin("Google2", "Username4", "pass");
+    	PasswordManager.getInstance().storeLogin("Google2", "Username5", "pass");
+    	PasswordManager.getInstance().storeLogin("Youtube2", "Username6", "pass");
+    	PasswordManager.getInstance().storeLogin("Reddit2", "Username7", "pass");
     }
 
     /**
@@ -123,14 +133,9 @@ public class MainActivity extends FragmentActivity implements ActionBar.OnNaviga
                 .replace(R.id.container, fragment)
                 .commit();
         this.getSupportFragmentManager().executePendingTransactions();
-        Log.w("ERROR", position + " ");
         
         if(position == 0){
-        	   // get the listview
-        	Log.w("ERROR", position + " ");
-        	
         	ExpandableListView listView = (ExpandableListView) findViewById(R.id.pwGroupList);
-            Log.w("ERROR", listView + " ");
             // preparing list data
             HashMap<String, List<String>> temp = PasswordManager.getInstance().getMap();
             List<String> keys = new ArrayList<String>();
@@ -153,6 +158,37 @@ public class MainActivity extends FragmentActivity implements ActionBar.OnNaviga
             });
             // setting list adapter
             listView.setAdapter(listAdapter);
+        }
+        
+        if(position == 1){
+        	ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
+                    android.R.layout.simple_dropdown_item_1line, PasswordManager.getInstance().getApplications());
+            final AutoCompleteTextView textView = (AutoCompleteTextView)findViewById(R.id.appInput);
+            final TextView userView = (TextView)findViewById(R.id.editText1);
+            final TextView passView = (TextView)findViewById(R.id.editText2);
+            textView.setAdapter(adapter);
+            
+            Button button = (Button) findViewById(R.id.button1);
+            
+            button.setOnClickListener(new OnClickListener() {
+           	
+				@Override
+				public void onClick(View v) {
+					String application = textView.getText().toString();
+					String username = userView.getText().toString();
+					String pass = passView.getText().toString();
+					
+					
+					Toast.makeText(
+                            getApplicationContext(),
+                            "Saved Password", Toast.LENGTH_SHORT)
+                            .show();
+					PasswordManager.getInstance().storeLogin(application, username, pass);
+					passView.setText("");
+					userView.setText("");
+					textView.setText("");
+				}
+            });
         }
         return true;
     }

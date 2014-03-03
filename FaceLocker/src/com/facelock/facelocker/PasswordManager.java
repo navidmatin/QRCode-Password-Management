@@ -78,4 +78,8 @@ public class PasswordManager {
 		}
 		return val;
 	}
+	
+	public String[] getApplications(){
+		return passwordMap.keySet().toArray(new String[passwordMap.size()]);
+	}
 }
