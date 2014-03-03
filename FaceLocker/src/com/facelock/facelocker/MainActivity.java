@@ -1,6 +1,11 @@
 package com.facelock.facelocker;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+
 import org.jasypt.*;
+
 import android.annotation.TargetApi;
 import android.app.ActionBar;
 import android.os.Bundle;
@@ -9,6 +14,7 @@ import android.os.Build;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.NavUtils;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -16,10 +22,15 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.ExpandableListView;
+import android.widget.ExpandableListView.OnChildClickListener;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class MainActivity extends FragmentActivity implements ActionBar.OnNavigationListener {
 
+
+	
     /**
      * The serialization (saved instance state) Bundle key representing the
      * current dropdown position.
@@ -31,6 +42,7 @@ public class MainActivity extends FragmentActivity implements ActionBar.OnNaviga
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+       
         // Set up the action bar to show a dropdown list.
         final ActionBar actionBar = getActionBar();
         actionBar.setDisplayShowTitleEnabled(false);
@@ -49,6 +61,17 @@ public class MainActivity extends FragmentActivity implements ActionBar.OnNaviga
                                 getString(R.string.title_section3),
                         }),
                 this);
+        	fillPasswords();
+    }
+
+    public void fillPasswords(){
+    	PasswordManager.getInstance().storeLogin("Facebook", "Username1", "pass");
+    	PasswordManager.getInstance().storeLogin("Facebook", "Username2", "pass");
+    	PasswordManager.getInstance().storeLogin("Facebook", "Username3", "pass");
+    	PasswordManager.getInstance().storeLogin("Google", "Username4", "pass");
+    	PasswordManager.getInstance().storeLogin("Google", "Username5", "pass");
+    	PasswordManager.getInstance().storeLogin("Youtube", "Username6", "pass");
+    	PasswordManager.getInstance().storeLogin("Reddit", "Username7", "pass");
     }
 
     /**
@@ -99,6 +122,38 @@ public class MainActivity extends FragmentActivity implements ActionBar.OnNaviga
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.container, fragment)
                 .commit();
+        this.getSupportFragmentManager().executePendingTransactions();
+        Log.w("ERROR", position + " ");
+        
+        if(position == 0){
+        	   // get the listview
+        	Log.w("ERROR", position + " ");
+        	
+        	ExpandableListView listView = (ExpandableListView) findViewById(R.id.pwGroupList);
+            Log.w("ERROR", listView + " ");
+            // preparing list data
+            HashMap<String, List<String>> temp = PasswordManager.getInstance().getMap();
+            List<String> keys = new ArrayList<String>();
+            keys.addAll(temp.keySet());
+            ExpandableListAdapter listAdapter = new ExpandableListAdapter(this, keys, temp);
+        
+            listView.setOnChildClickListener(new OnChildClickListener() {
+            	 
+                @Override
+                public boolean onChildClick(ExpandableListView parent, View v,
+                        int groupPosition, int childPosition, long id) {
+                    Toast.makeText(
+                            getApplicationContext(),
+                            		parent.getExpandableListAdapter().getGroup(groupPosition)
+                                    + " : "
+                                    + parent.getExpandableListAdapter().getChild(groupPosition, childPosition), Toast.LENGTH_SHORT)
+                            .show();
+                    return false;
+                }
+            });
+            // setting list adapter
+            listView.setAdapter(listAdapter);
+        }
         return true;
     }
 
@@ -125,6 +180,7 @@ public class MainActivity extends FragmentActivity implements ActionBar.OnNaviga
         	switch (section_number) {
         	case 1:
         		rootView = inflater.inflate(R.layout.my_passwords, container, false);
+        		
         		break;
         	case 2:
         		rootView = inflater.inflate(R.layout.add_password, container, false);
