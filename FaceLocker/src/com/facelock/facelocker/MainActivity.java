@@ -10,6 +10,7 @@ import android.annotation.TargetApi;
 import android.app.ActionBar;
 import android.os.Bundle;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Build;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
@@ -25,8 +26,10 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ExpandableListView;
 import android.widget.ExpandableListView.OnChildClickListener;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -60,28 +63,55 @@ public class MainActivity extends FragmentActivity implements ActionBar.OnNaviga
                         android.R.id.text1,
                         new String[] {
                                 getString(R.string.title_section1),
-                                getString(R.string.title_section2)
+                                getString(R.string.title_section2),
+                                getString(R.string.title_section3)
                         }),
                 this);
-        	fillPasswords();
     }
 
     public void fillPasswords(){
-    	PasswordManager.getInstance().storeLogin("Facebook", "Username1", "pass");
-    	PasswordManager.getInstance().storeLogin("Facebook", "Username2", "pass");
-    	PasswordManager.getInstance().storeLogin("Facebook", "Username3", "pass");
-    	PasswordManager.getInstance().storeLogin("Google", "Username4", "pass");
-    	PasswordManager.getInstance().storeLogin("Google", "Username5", "pass");
-    	PasswordManager.getInstance().storeLogin("Youtube", "Username6", "pass");
-    	PasswordManager.getInstance().storeLogin("Reddit", "Username7", "pass");
-    	PasswordManager.getInstance().storeLogin("Facebook2", "Username1", "pass");
-    	PasswordManager.getInstance().storeLogin("Facebook2", "Username2", "pass");
-    	PasswordManager.getInstance().storeLogin("Facebook2", "Username3", "pass");
-    	PasswordManager.getInstance().storeLogin("Google2", "Username4", "pass");
-    	PasswordManager.getInstance().storeLogin("Google2", "Username5", "pass");
-    	PasswordManager.getInstance().storeLogin("Youtube2", "Username6", "pass");
-    	PasswordManager.getInstance().storeLogin("Reddit2", "Username7", "pass");
+    	SharedPreferences file = getPreferences(MODE_PRIVATE);
+    	PasswordManager pwmanager = PasswordManager.getInstance();
+    	pwmanager.getLogins(file);
     }
+
+    
+public void storeLogin(View view) {
+    	
+    	AutoCompleteTextView appField = (AutoCompleteTextView) findViewById(R.id.autoCompleteTextView1);
+    	EditText usernameField = (EditText) findViewById(R.id.editText1);
+    	EditText passwordField = (EditText) findViewById(R.id.editText2);
+    	
+    	String app = appField.getText().toString();
+    	String username = usernameField.getText().toString();
+    	String password = passwordField.getText().toString();
+    	
+    	SharedPreferences logins = getPreferences(MODE_PRIVATE);
+    	
+    	Boolean successfulSave = PasswordManager.storeLogin2(app, username, password, logins);
+    	
+    	if (successfulSave) {
+    		Toast.makeText(this, "Save Successful", Toast.LENGTH_SHORT).show();
+    	} else {
+    		Toast.makeText(this, "Save Unsuccessful", Toast.LENGTH_SHORT).show();
+    	}
+    	
+    	usernameField.setText("");
+    	passwordField.setText("");
+    }
+    
+
+public void deleteLogins(View view) {
+	SharedPreferences logins = getPreferences(MODE_PRIVATE);
+	Boolean successfulDelete = PasswordManager.deleteAll(logins);
+	
+	if (successfulDelete) {
+		Toast.makeText(this, "Delete Successful", Toast.LENGTH_SHORT).show();
+	} else {
+		Toast.makeText(this, "Delete Unsuccessful", Toast.LENGTH_SHORT).show();
+	}
+}
+
 
     /**
      * Backward-compatible version of {@link ActionBar#getThemedContext()} that
@@ -134,6 +164,8 @@ public class MainActivity extends FragmentActivity implements ActionBar.OnNaviga
         this.getSupportFragmentManager().executePendingTransactions();
         
         if(position == 0){
+        	
+        	fillPasswords();
         	ExpandableListView listView = (ExpandableListView) findViewById(R.id.pwGroupList);
             // preparing list data
             HashMap<String, List<String>> temp = PasswordManager.getInstance().getMap();
@@ -163,31 +195,8 @@ public class MainActivity extends FragmentActivity implements ActionBar.OnNaviga
         	ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
                     android.R.layout.simple_dropdown_item_1line, PasswordManager.getInstance().getApplications());
             final AutoCompleteTextView textView = (AutoCompleteTextView)findViewById(R.id.appInput);
-            final TextView userView = (TextView)findViewById(R.id.editText1);
-            final TextView passView = (TextView)findViewById(R.id.editText2);
             textView.setAdapter(adapter);
-            
-            Button button = (Button) findViewById(R.id.button1);
-            
-            button.setOnClickListener(new OnClickListener() {
-           	
-				@Override
-				public void onClick(View v) {
-					String application = textView.getText().toString();
-					String username = userView.getText().toString();
-					String pass = passView.getText().toString();
-					
-					
-					Toast.makeText(
-                            getApplicationContext(),
-                            "Saved Password", Toast.LENGTH_SHORT)
-                            .show();
-					PasswordManager.getInstance().storeLogin(application, username, pass);
-					passView.setText("");
-					userView.setText("");
-					textView.setText("");
-				}
-            });
+           
         }
         return true;
     }
