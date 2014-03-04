@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import org.jasypt.*;
-
 import android.annotation.TargetApi;
 import android.app.ActionBar;
 import android.os.Bundle;
@@ -63,8 +61,7 @@ public class MainActivity extends FragmentActivity implements ActionBar.OnNaviga
                         android.R.id.text1,
                         new String[] {
                                 getString(R.string.title_section1),
-                                getString(R.string.title_section2),
-                                getString(R.string.title_section3)
+                                getString(R.string.title_section2)
                         }),
                 this);
     }
@@ -88,7 +85,7 @@ public void storeLogin(View view) {
     	
     	SharedPreferences logins = getPreferences(MODE_PRIVATE);
     	
-    	Boolean successfulSave = PasswordManager.storeLogin2(app, username, password, logins);
+    	Boolean successfulSave = PasswordManager.storeLogin(app, username, password, logins);
     	
     	if (successfulSave) {
     		Toast.makeText(this, "Save Successful", Toast.LENGTH_SHORT).show();
@@ -192,9 +189,10 @@ public void deleteLogins(View view) {
         }
         
         if(position == 1){
+        	fillPasswords();
         	ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
                     android.R.layout.simple_dropdown_item_1line, PasswordManager.getInstance().getApplications());
-            final AutoCompleteTextView textView = (AutoCompleteTextView)findViewById(R.id.appInput);
+            final AutoCompleteTextView textView = (AutoCompleteTextView)findViewById(R.id.autoCompleteTextView1);
             textView.setAdapter(adapter);
            
         }

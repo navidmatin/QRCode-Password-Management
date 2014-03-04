@@ -6,8 +6,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.jasypt.*;
+import org.jasypt.util.password.StrongPasswordEncryptor;
+import org.jasypt.util.text.StrongTextEncryptor;
 
 import android.content.SharedPreferences;
+import android.util.Log;
+import android.widget.Toast;
 
 /**
  * Singleton class that manages login information. 
@@ -44,18 +49,15 @@ public class PasswordManager {
 	 * @param username The username used to login to the application
 	 * @param password The unencrypted password used to login to the application
 	 */
-	public void storeLogin(String application, String username, String password){
-		HashMap<String, LoginInformation> applicationMap = passwordMap.get(application);
-		if(applicationMap == null)
-			applicationMap = new HashMap<String, LoginInformation>();
-		applicationMap.put(username, new LoginInformation(application, username, password));
-		passwordMap.put(application, applicationMap);
-	}
 
-	public static Boolean storeLogin2(String application, String username, String password, SharedPreferences logins) {
+	public static Boolean storeLogin(String application, String username, String password, SharedPreferences logins) {
 		String key = getApplicationUsernameKey(application, username);
 		SharedPreferences.Editor editor = logins.edit();
+		//StrongTextEncryptor passwordEncryptor = new StrongTextEncryptor();
+		//String encryptedPassword = passwordEncryptor.encrypt(password);
 		editor.putString(key, password);
+		//Log.w("tag", "encrypted: " + encryptedPassword);
+		//Log.w("tag", "decrypted: " + passwordEncryptor.decrypt(encryptedPassword));
     	return editor.commit();
 	}
 	
