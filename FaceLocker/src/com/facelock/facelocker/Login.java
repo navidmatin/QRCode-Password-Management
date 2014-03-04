@@ -1,11 +1,11 @@
 package com.facelock.facelocker;
 
-import com.facelock.facelocker.DatabaseHelper;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.app.Activity;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -13,7 +13,6 @@ import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -22,7 +21,7 @@ import android.widget.TextView;
  * Activity which displays a login screen to the user, offering registration as
  * well.
  */
-public class LoginActivity extends Activity {
+public class Login extends Activity {
 	/**
 	 * A dummy authentication store containing known user names and passwords.
 	 * TODO: remove after connecting to a real authentication system.
@@ -32,15 +31,12 @@ public class LoginActivity extends Activity {
 
 	/**
 	 * The default email to populate the email field with.
-	 
+	 */
 	public static final String EXTRA_EMAIL = "com.example.android.authenticatordemo.extra.EMAIL";
 
-	
+	/**
 	 * Keep track of the login task to ensure we can cancel it if requested.
 	 */
-	//Database that stores login information
-	private DatabaseHelper dh;
-	private final static String OPT_NAME = "name"; //Don't know what it is got it from another class
 	private UserLoginTask mAuthTask = null;
 
 	// Values for email and password at the time of the login attempt.
@@ -61,7 +57,7 @@ public class LoginActivity extends Activity {
 		setContentView(R.layout.login);
 
 		// Set up the login form.
-		mEmail = getIntent().getStringExtra("Email");
+		mEmail = getIntent().getStringExtra(EXTRA_EMAIL);
 		mEmailView = (EditText) findViewById(R.id.email);
 		mEmailView.setText(mEmail);
 
@@ -90,8 +86,6 @@ public class LoginActivity extends Activity {
 						attemptLogin();
 					}
 				});
-		findViewById(R.id.register_button).setOnClickListener((OnClickListener) this);
-		
 	}
 
 	@Override
@@ -155,6 +149,7 @@ public class LoginActivity extends Activity {
 			showProgress(true);
 			mAuthTask = new UserLoginTask();
 			mAuthTask.execute((Void) null);
+			startActivity(new Intent(this, MainActivity.class));
 		}
 	}
 
