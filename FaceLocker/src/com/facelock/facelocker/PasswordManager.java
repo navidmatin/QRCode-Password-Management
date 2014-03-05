@@ -1,11 +1,19 @@
 package com.facelock.facelocker;
 
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import javax.crypto.Cipher;
+import javax.crypto.KeyGenerator;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.SecretKey;
+
 import org.jasypt.*;
 import org.jasypt.util.password.StrongPasswordEncryptor;
 import org.jasypt.util.text.StrongTextEncryptor;
@@ -53,11 +61,20 @@ public class PasswordManager {
 	public static Boolean storeLogin(String application, String username, String password, SharedPreferences logins) {
 		String key = getApplicationUsernameKey(application, username);
 		SharedPreferences.Editor editor = logins.edit();
-		//StrongTextEncryptor passwordEncryptor = new StrongTextEncryptor();
-		//String encryptedPassword = passwordEncryptor.encrypt(password);
-		editor.putString(key, password);
-		//Log.w("tag", "encrypted: " + encryptedPassword);
-		//Log.w("tag", "decrypted: " + passwordEncryptor.decrypt(encryptedPassword));
+		String encryptedPassword;
+		String decryptedPassword;
+		try {
+			PasswordCrypto encryptor = new PasswordCrypto();
+			encryptedPassword = encryptor.encrypt(password);
+			Log.w("encryption", encryptedPassword);
+			decryptedPassword = encryptor.decrypt(encryptedPassword);
+			Log.w("encryption", decryptedPassword);
+
+		} catch (Exception e) {
+			return false;
+		}
+		
+		editor.putString(key, encryptedPassword);
     	return editor.commit();
 	}
 	
