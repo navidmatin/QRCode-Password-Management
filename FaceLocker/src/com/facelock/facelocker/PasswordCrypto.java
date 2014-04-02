@@ -8,11 +8,14 @@ import javax.crypto.KeyGenerator;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 
+import android.content.SharedPreferences;
+
 import com.sun.mail.util.BASE64EncoderStream;
 import com.sun.mail.util.BASE64DecoderStream;
 
 public class PasswordCrypto {
 
+	private static final String ENCRYPTION_KEY = "encryptionKey";
 	private static SecretKey secretKey;
 	private static Cipher eCipher;
 	private static Cipher dCipher;

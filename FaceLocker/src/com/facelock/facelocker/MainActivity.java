@@ -8,6 +8,7 @@ import android.annotation.TargetApi;
 import android.app.ActionBar;
 import android.os.Bundle;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Build;
 import android.support.v4.app.Fragment;
@@ -61,7 +62,8 @@ public class MainActivity extends FragmentActivity implements ActionBar.OnNaviga
                         android.R.id.text1,
                         new String[] {
                                 getString(R.string.title_section1),
-                                getString(R.string.title_section2)
+                                getString(R.string.title_section2),
+                                getString(R.string.title_section3)
                         }),
                 this);
     }
@@ -85,7 +87,7 @@ public void storeLogin(View view) {
     	
     	SharedPreferences logins = getPreferences(MODE_PRIVATE);
     	
-    	Boolean successfulSave = PasswordManager.storeLogin(app, username, password, logins);
+    	Boolean successfulSave = PasswordManager.getInstance().storeLogin(app, username, password, logins);
     	
     	if (successfulSave) {
     		Toast.makeText(this, "Save Successful", Toast.LENGTH_SHORT).show();
@@ -93,12 +95,12 @@ public void storeLogin(View view) {
     		Toast.makeText(this, "Save Unsuccessful", Toast.LENGTH_SHORT).show();
     	}
     	
-    	usernameField.setText("");
-    	passwordField.setText("");
+    	getActionBar().setSelectedNavigationItem(0);
+    	onNavigationItemSelected(0, 0);
     }
     
 
-public void deleteLogins(View view) {
+public void deleteLogins() {
 	SharedPreferences logins = getPreferences(MODE_PRIVATE);
 	Boolean successfulDelete = PasswordManager.deleteAll(logins);
 	
@@ -175,11 +177,15 @@ public void deleteLogins(View view) {
                 @Override
                 public boolean onChildClick(ExpandableListView parent, View v,
                         int groupPosition, int childPosition, long id) {
-                    Toast.makeText(
+                	Toast.makeText(
                             getApplicationContext(),
-                            		parent.getExpandableListAdapter().getGroup(groupPosition)
-                                    + " : "
-                                    + parent.getExpandableListAdapter().getChild(groupPosition, childPosition), Toast.LENGTH_SHORT)
+                            PasswordManager.getInstance().getPassword(parent.getExpandableListAdapter().getGroup(groupPosition).toString(), 
+                            		parent.getExpandableListAdapter().getChild(groupPosition, childPosition).toString(), 
+                            		getPreferences(MODE_PRIVATE)),
+                            		//parent.getExpandableListAdapter().getGroup(groupPosition)
+                                    //+ " : "
+                                    //+ parent.getExpandableListAdapter().getChild(groupPosition, childPosition),
+                            Toast.LENGTH_SHORT)
                             .show();
                     return false;
                 }
@@ -196,6 +202,13 @@ public void deleteLogins(View view) {
             textView.setAdapter(adapter);
            
         }
+        
+        if(position == 2) {
+        	deleteLogins();
+        	getActionBar().setSelectedNavigationItem(0);
+        	onNavigationItemSelected(0, 0);
+        }
+        
         return true;
     }
 
@@ -222,7 +235,6 @@ public void deleteLogins(View view) {
         	switch (section_number) {
         	case 1:
         		rootView = inflater.inflate(R.layout.my_passwords, container, false);
-        		
         		break;
         	case 2:
         		rootView = inflater.inflate(R.layout.add_password, container, false);

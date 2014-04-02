@@ -1,26 +1,13 @@
 package com.facelock.facelocker;
 
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.crypto.Cipher;
-import javax.crypto.KeyGenerator;
-import javax.crypto.NoSuchPaddingException;
-import javax.crypto.SecretKey;
-
-import org.jasypt.*;
-import org.jasypt.util.password.StrongPasswordEncryptor;
-import org.jasypt.util.text.StrongTextEncryptor;
-
 import android.content.SharedPreferences;
 import android.util.Log;
-import android.widget.Toast;
 
 /**
  * Singleton class that manages login information. 
@@ -33,9 +20,16 @@ import android.widget.Toast;
 public class PasswordManager {
 	private static PasswordManager instance = new PasswordManager();
 	private HashMap<String, HashMap<String, LoginInformation>> passwordMap;
+	private PasswordCrypto encryptor;
+	
 	
 	private PasswordManager(){
 		passwordMap = new HashMap<String, HashMap<String, LoginInformation>>();
+		try {
+			encryptor = new PasswordCrypto();
+		} catch (Exception e) {
+			
+		}
 	}
 	
 	/**
@@ -58,17 +52,12 @@ public class PasswordManager {
 	 * @param password The unencrypted password used to login to the application
 	 */
 
-	public static Boolean storeLogin(String application, String username, String password, SharedPreferences logins) {
+	public Boolean storeLogin(String application, String username, String password, SharedPreferences logins) {
 		String key = getApplicationUsernameKey(application, username);
 		SharedPreferences.Editor editor = logins.edit();
 		String encryptedPassword;
-		String decryptedPassword;
 		try {
-			PasswordCrypto encryptor = new PasswordCrypto();
 			encryptedPassword = encryptor.encrypt(password);
-			Log.w("encryption", encryptedPassword);
-			decryptedPassword = encryptor.decrypt(encryptedPassword);
-			Log.w("encryption", decryptedPassword);
 
 		} catch (Exception e) {
 			return false;
@@ -91,6 +80,19 @@ public class PasswordManager {
     		applicationMap.put(appUserCombo[1], new LoginInformation(appUserCombo[0], appUserCombo[1], pairs.get(key).toString()));
     		passwordMap.put(appUserCombo[0], applicationMap);
     	}
+	}
+	
+	public String getPassword(String application, String username, SharedPreferences logins) {
+		String applicationUsernameKey = getApplicationUsernameKey(application, username);
+		String encryptedPassword = logins.getString(applicationUsernameKey, "");
+		String decryptedPassword;
+		try {
+			decryptedPassword = encryptor.decrypt(encryptedPassword);
+
+		} catch (Exception e) {
+			decryptedPassword = e.toString();
+		}
+		return decryptedPassword;
 	}
 	
 	public static Boolean deleteAll (SharedPreferences logins) {
