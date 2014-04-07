@@ -2,7 +2,7 @@
 target
 tmp
 *~
-bin
+BuckeyeBuilder/bin/*
 */test-output
 temp-testng-customsuite.xml
 **pom.xml.releaseBackup
@@ -17,3 +17,5 @@ gen-external-apklibs
 .DS_Store
 *.swp
 out
+.metadata/*
+BuckeyeBuilder/project.properties
