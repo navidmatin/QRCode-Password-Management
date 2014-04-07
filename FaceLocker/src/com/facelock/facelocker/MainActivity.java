@@ -75,7 +75,7 @@ public class MainActivity extends FragmentActivity implements ActionBar.OnNaviga
     }
 
     
-public void storeLogin(View view) {
+	public void storeLogin(View view) {
     	
     	AutoCompleteTextView appField = (AutoCompleteTextView) findViewById(R.id.autoCompleteTextView1);
     	EditText usernameField = (EditText) findViewById(R.id.editText1);
@@ -100,16 +100,24 @@ public void storeLogin(View view) {
     }
     
 
-public void deleteLogins() {
-	SharedPreferences logins = getPreferences(MODE_PRIVATE);
-	Boolean successfulDelete = PasswordManager.deleteAll(logins);
-	
-	if (successfulDelete) {
-		Toast.makeText(this, "Delete Successful", Toast.LENGTH_SHORT).show();
-	} else {
-		Toast.makeText(this, "Delete Unsuccessful", Toast.LENGTH_SHORT).show();
+	public void deleteLogins() {
+		SharedPreferences logins = getPreferences(MODE_PRIVATE);
+		Boolean successfulDelete = PasswordManager.deleteAll(logins);
+		
+		if (successfulDelete) {
+			Toast.makeText(this, "Delete Successful", Toast.LENGTH_SHORT).show();
+		} else {
+			Toast.makeText(this, "Delete Unsuccessful", Toast.LENGTH_SHORT).show();
+		}
 	}
-}
+	
+	public void generatePassword (View view) {
+		String randomPassword = PasswordGenerator.Generate(8, 16);
+		TextView visiblePasswordField = (TextView) findViewById(R.id.randomPassword);
+		EditText passwordField = (EditText) findViewById(R.id.editText2);
+		visiblePasswordField.setText(randomPassword);
+		passwordField.setText(randomPassword);
+	}
 
 
     /**
