@@ -40,8 +40,8 @@ public class MainActivity extends FragmentActivity implements ActionBar.OnNaviga
      * current dropdown position.
      */
     private static final String STATE_SELECTED_NAVIGATION_ITEM = "selected_navigation_item";
-    private static String cryptoSharedPref="com.facelock.facelocker.crypto";
-    private static String userSharedPref="com.facelock.facelocker.usershared";
+    private static String cryptoSharedPref;
+    private static String userSharedPref;
     
 
     @Override
@@ -51,8 +51,10 @@ public class MainActivity extends FragmentActivity implements ActionBar.OnNaviga
         username = getIntent().getStringExtra("User");//getting the username from login
         
         //Getting saved preferences
-        cryptoSharedPref=cryptoSharedPref+username;
-        userSharedPref=userSharedPref+username;
+        cryptoSharedPref="com.facelock.facelocker.crypto";
+        userSharedPref="com.facelock.facelocker.usershared";
+        cryptoSharedPref=cryptoSharedPref+"."+username;
+        userSharedPref=userSharedPref+"."+username;
         SharedPreferences sharedPref = this.getSharedPreferences(cryptoSharedPref,Context.MODE_PRIVATE);
         String defaultvalue= null;
         key=sharedPref.getString("Crypto", defaultvalue);
@@ -72,7 +74,8 @@ public class MainActivity extends FragmentActivity implements ActionBar.OnNaviga
                         new String[] {
                                 getString(R.string.title_section1),
                                 getString(R.string.title_section2),
-                                getString(R.string.title_section3)
+                                getString(R.string.title_section3),
+                                getString(R.string.title_section4)
                         }),
                 this);
     }
@@ -224,6 +227,10 @@ public class MainActivity extends FragmentActivity implements ActionBar.OnNaviga
         	deleteLogins();
         	getActionBar().setSelectedNavigationItem(0);
         	onNavigationItemSelected(0, 0);
+        }
+        if(position == 3) {
+        	startActivity(new Intent(this, Login.class));
+        	finish();
         }
         
         return true;
