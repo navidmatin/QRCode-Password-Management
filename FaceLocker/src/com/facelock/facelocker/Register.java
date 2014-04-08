@@ -1,5 +1,8 @@
 package com.facelock.facelocker;
 
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.WriterException;
+
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
@@ -7,6 +10,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -14,6 +18,7 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -50,7 +55,24 @@ public class Register extends Activity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		// ImageView to display the QR code in.  This should be defined in 
+		// your Activity's XML layout file
 		setContentView(R.layout.register);
+		
+		ImageView imageView = (ImageView) findViewById(R.id.qrCode);
+
+		String qrData = PasswordGenerator.Generate(20, 30);
+		int qrCodeDimention = 500;
+
+		QRCodeEncoder qrCodeEncoder = new QRCodeEncoder(qrData, null,
+		        Contents.Type.TEXT, BarcodeFormat.QR_CODE.toString(), qrCodeDimention);
+
+		try {
+		    Bitmap bitmap = qrCodeEncoder.encodeAsBitmap();
+		    imageView.setImageBitmap(bitmap);
+		} catch (WriterException e) {
+		    e.printStackTrace();
+		}
 		
 		// Set up the register form.
 		mUsername = getIntent().getStringExtra(EXTRA_EMAIL);
