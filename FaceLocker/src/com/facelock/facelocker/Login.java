@@ -48,11 +48,11 @@ public class Login extends Activity {
 
 	Intent intent;
 	// Values for email and password at the time of the login attempt.
-	private String mUsername;
+	private String mEmail;
 	private String mPassword;
 
 	// UI references.
-	private EditText mUsernameView;
+	private EditText mEmailView;
 	private EditText mPasswordView;
 	private View mLoginFormView;
 	private View mLoginStatusView;
@@ -65,9 +65,9 @@ public class Login extends Activity {
 		setContentView(R.layout.login);
 
 		// Set up the login form.
-		mUsername = getIntent().getStringExtra(EXTRA_EMAIL);
-		mUsernameView = (EditText) findViewById(R.id.username);
-		mUsernameView.setText(mUsername);
+		mEmail = getIntent().getStringExtra(EXTRA_EMAIL);
+		mEmailView = (EditText) findViewById(R.id.username);
+		mEmailView.setText(mEmail);
 
 		mPasswordView = (EditText) findViewById(R.id.password);
 		mPasswordView
@@ -123,11 +123,11 @@ public class Login extends Activity {
 		}
 
 		// Reset errors.
-		mUsernameView.setError(null);
+		mEmailView.setError(null);
 		mPasswordView.setError(null);
 
 		// Store values at the time of the login attempt.
-		mUsername = mUsernameView.getText().toString();
+		mEmail = mEmailView.getText().toString();
 		mPassword = mPasswordView.getText().toString();
 		/*
 		try {
@@ -157,6 +157,16 @@ public class Login extends Activity {
 			focusView = mPasswordView;
 			cancel = true;
 		}
+		// Check for a valid email address.
+				if (TextUtils.isEmpty(mEmail)) {
+					mEmailView.setError(getString(R.string.error_field_required));
+					focusView = mEmailView;
+					cancel = true;
+				} else if (!mEmail.contains("@")) {
+					mEmailView.setError(getString(R.string.error_invalid_email));
+					focusView = mEmailView;
+					cancel = true;
+				}
 		
 		if (cancel) {
 			// There was an error; don't attempt login and focus the first
@@ -177,7 +187,7 @@ public class Login extends Activity {
 		}
 	}
 	private boolean checkLogin(){
-		String username=this.mUsernameView.getText().toString();
+		String username=this.mEmailView.getText().toString();
 		String password=this.mPasswordView.getText().toString();
 		this.dh=new DatabaseHelper(this);
 		List<String> names=this.dh.selectAll(username,password);
@@ -263,7 +273,7 @@ public class Login extends Activity {
 
 			for (String credential : DUMMY_CREDENTIALS) {
 				String[] pieces = credential.split(":");
-				if (pieces[0].equals(mUsername)) {
+				if (pieces[0].equals(mEmail)) {
 					// Account exists, return true if the password matches.
 					return pieces[1].equals(mPassword);
 				}

@@ -39,12 +39,12 @@ public class Register extends Activity {
 
 
 	// Values for email and password at the time of the register attempt.
-	private String mUsername;
+	private String mEmail;
 	private String mPassword;
 	private String mPConfirm;
 
 	// UI references.
-	private EditText mUsernameView;
+	private EditText mEmailView;
 	private EditText mPasswordView;
 	private EditText mPConfirmView;
 	private View mregisterFormView;
@@ -75,9 +75,9 @@ public class Register extends Activity {
 		}
 		
 		// Set up the register form.
-		mUsername = getIntent().getStringExtra(EXTRA_EMAIL);
-		mUsernameView = (EditText) findViewById(R.id.register_username);
-		mUsernameView.setText(mUsername);
+		mEmail = getIntent().getStringExtra(EXTRA_EMAIL);
+		mEmailView = (EditText) findViewById(R.id.register_username);
+		mEmailView.setText(mEmail);
 
 		mPasswordView = (EditText) findViewById(R.id.register_password);
 		mPasswordView
@@ -124,11 +124,11 @@ public class Register extends Activity {
 	public void attemptregister() {
 
 		// Reset errors.
-		mUsernameView.setError(null);
+		mEmailView.setError(null);
 		mPasswordView.setError(null);
 
 		// Store values at the time of the register attempt.
-		mUsername = mUsernameView.getText().toString();
+		mEmail = mEmailView.getText().toString();
 		mPassword = mPasswordView.getText().toString();
 		mPConfirm = mPConfirmView.getText().toString();		
 
@@ -145,24 +145,35 @@ public class Register extends Activity {
 			focusView = mPasswordView;
 			cancel = true;
 		}
-
+		
+		// Check for a valid email address.
+		if (TextUtils.isEmpty(mEmail)) {
+			mEmailView.setError(getString(R.string.error_field_required));
+			focusView = mEmailView;
+			cancel = true;
+		} else if (!mEmail.contains("@")) {
+			mEmailView.setError(getString(R.string.error_invalid_email));
+			focusView = mEmailView;
+			cancel = true;
+		}
+		
 		if (cancel) {
 			// There was an error; don't attempt register and focus the first
 			// form field with an error.
 			focusView.requestFocus();
 		} else {
 			
-			if ((mPassword.equals(mPConfirm)) && (!mUsername.equals(""))
+			if ((mPassword.equals(mPConfirm)) && (!mEmail.equals(""))
 					&& (!mPassword.equals("")) && (!mPConfirm.equals(""))) {
 				this.dh = new DatabaseHelper(this);
-				this.dh.insert(mUsername, mPassword);
+				this.dh.insert(mEmail, mPassword);
 				// this.labResult.setText("Added");
 				Toast.makeText(Register.this, "new record inserted",
 						Toast.LENGTH_SHORT).show();
 				mregisterStatusMessageView.setText(R.string.register_progress_creating_new_user);
 				showProgress(true);
 				startActivity(new Intent(this, Login.class));
-			} else if ((mUsername.equals("")) || (mPassword.equals(""))
+			} else if ((mEmail.equals("")) || (mPassword.equals(""))
 					|| (mPConfirm.equals(""))) {
 				Toast.makeText(Register.this, "Missing entry", Toast.LENGTH_SHORT)
 						.show();
