@@ -18,24 +18,34 @@ import android.util.Log;
  * @author Hector Medina-Fetterman
  */
 public class PasswordManager {
-	private static PasswordManager instance = new PasswordManager();
+	private static String _key;
+	private static PasswordManager instance = new PasswordManager(_key);
 	private HashMap<String, HashMap<String, LoginInformation>> passwordMap;
 	private PasswordCrypto encryptor;
 	
 	
-	private PasswordManager(){
+	private PasswordManager(String key){
 		passwordMap = new HashMap<String, HashMap<String, LoginInformation>>();
 		try {
-			encryptor = new PasswordCrypto();
+			encryptor = new PasswordCrypto(key);
 		} catch (Exception e) {
 			
 		}
 	}
-	
+	private static void setKey(String key){
+		_key=key;
+		try {
+			PasswordCrypto.setKey(_key);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
 	/**
 	 * @return The singleton instance of the PasswordManager class
 	 */
-	public static PasswordManager getInstance(){
+	public static PasswordManager getInstance(String key){
+		setKey(key);
 		return instance;
 	}
 	
@@ -98,7 +108,7 @@ public class PasswordManager {
 	public static Boolean deleteAll (SharedPreferences logins) {
 		SharedPreferences.Editor editor = logins.edit();
 		editor.clear();
-		instance = new PasswordManager();
+		instance = new PasswordManager(null);
     	return editor.commit();
 	}
 	

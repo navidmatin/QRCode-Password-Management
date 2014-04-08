@@ -127,7 +127,7 @@ public class Login extends Activity {
 		mUsername = mUsernameView.getText().toString();
 		mPassword = mPasswordView.getText().toString();
 		try {
-			PasswordCrypto encryptor = new PasswordCrypto();
+			PasswordCrypto encryptor = new PasswordCrypto(null);
 			String encryptedmPassword = encryptor.encrypt(mPassword);
 			mPassword=encryptedmPassword;
 			

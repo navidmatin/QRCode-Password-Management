@@ -33,8 +33,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 public class MainActivity extends FragmentActivity implements ActionBar.OnNavigationListener {
-
-
+	private String key;
 	
     /**
      * The serialization (saved instance state) Bundle key representing the
@@ -47,6 +46,10 @@ public class MainActivity extends FragmentActivity implements ActionBar.OnNaviga
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        //Getting saved preferences
+        SharedPreferences sharedPref = this.getSharedPreferences("com.facelock.facelocker.crypto",Context.MODE_PRIVATE);
+        String defaultvalue= null;
+        key=sharedPref.getString("Crypto", defaultvalue);
        
         // Set up the action bar to show a dropdown list.
         final ActionBar actionBar = getActionBar();
@@ -70,7 +73,7 @@ public class MainActivity extends FragmentActivity implements ActionBar.OnNaviga
 
     public void fillPasswords(){
     	SharedPreferences file = getPreferences(MODE_PRIVATE);
-    	PasswordManager pwmanager = PasswordManager.getInstance();
+    	PasswordManager pwmanager = PasswordManager.getInstance(key);
     	pwmanager.getLogins(file);
     }
 
@@ -87,7 +90,7 @@ public class MainActivity extends FragmentActivity implements ActionBar.OnNaviga
     	
     	SharedPreferences logins = getPreferences(MODE_PRIVATE);
     	
-    	Boolean successfulSave = PasswordManager.getInstance().storeLogin(app, username, password, logins);
+    	Boolean successfulSave = PasswordManager.getInstance(key).storeLogin(app, username, password, logins);
     	
     	if (successfulSave) {
     		Toast.makeText(this, "Save Successful", Toast.LENGTH_SHORT).show();
@@ -175,7 +178,7 @@ public class MainActivity extends FragmentActivity implements ActionBar.OnNaviga
         	fillPasswords();
         	ExpandableListView listView = (ExpandableListView) findViewById(R.id.pwGroupList);
             // preparing list data
-            HashMap<String, List<String>> temp = PasswordManager.getInstance().getMap();
+            HashMap<String, List<String>> temp = PasswordManager.getInstance(key).getMap();
             List<String> keys = new ArrayList<String>();
             keys.addAll(temp.keySet());
             ExpandableListAdapter listAdapter = new ExpandableListAdapter(this, keys, temp);
@@ -187,7 +190,7 @@ public class MainActivity extends FragmentActivity implements ActionBar.OnNaviga
                         int groupPosition, int childPosition, long id) {
                 	Toast.makeText(
                             getApplicationContext(),
-                            PasswordManager.getInstance().getPassword(parent.getExpandableListAdapter().getGroup(groupPosition).toString(), 
+                            PasswordManager.getInstance(key).getPassword(parent.getExpandableListAdapter().getGroup(groupPosition).toString(), 
                             		parent.getExpandableListAdapter().getChild(groupPosition, childPosition).toString(), 
                             		getPreferences(MODE_PRIVATE)),
                             		//parent.getExpandableListAdapter().getGroup(groupPosition)
@@ -205,7 +208,7 @@ public class MainActivity extends FragmentActivity implements ActionBar.OnNaviga
         if(position == 1){
         	fillPasswords();
         	ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
-                    android.R.layout.simple_dropdown_item_1line, PasswordManager.getInstance().getApplications());
+                    android.R.layout.simple_dropdown_item_1line, PasswordManager.getInstance(key).getApplications());
             final AutoCompleteTextView textView = (AutoCompleteTextView)findViewById(R.id.autoCompleteTextView1);
             textView.setAdapter(adapter);
            
@@ -253,6 +256,21 @@ public class MainActivity extends FragmentActivity implements ActionBar.OnNaviga
         	}
             return rootView;
         }
+    }
+    @Override
+    protected void onStop()
+    {
+    	super.onStop();
+    	SharedPreferences sharedPref = this.getSharedPreferences("com.facelock.facelocker.crypto",Context.MODE_PRIVATE);
+    	SharedPreferences.Editor editor=sharedPref.edit();
+    	try {
+			editor.putString("Crypto", PasswordCrypto.getKey());
+			editor.commit();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    	
     }
 
 }
