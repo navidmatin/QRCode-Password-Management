@@ -7,7 +7,9 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -44,6 +46,7 @@ public class Login extends Activity {
 	private DatabaseHelper dh;
 	private UserLoginTask mAuthTask = null;
 
+	Intent intent;
 	// Values for email and password at the time of the login attempt.
 	private String mUsername;
 	private String mPassword;
@@ -126,6 +129,7 @@ public class Login extends Activity {
 		// Store values at the time of the login attempt.
 		mUsername = mUsernameView.getText().toString();
 		mPassword = mPasswordView.getText().toString();
+		/*
 		try {
 			PasswordCrypto encryptor = new PasswordCrypto(null);
 			String encryptedmPassword = encryptor.encrypt(mPassword);
@@ -139,7 +143,7 @@ public class Login extends Activity {
 			Toast toast= Toast.makeText(context, _error, duration);
 			toast.show();
 			
-		}
+		}*/
 
 		boolean cancel = false;
 		View focusView = null;
@@ -163,27 +167,40 @@ public class Login extends Activity {
 			// Show a progress spinner, and kick off a background task to
 			// perform the user login attempt.
 			//Checking for email and password
-			this.dh = new DatabaseHelper(this);
-			List<String> names = this.dh.selectAll(mUsername, mPassword);
 			mLoginStatusMessageView.setText(R.string.login_progress_signing_in);
-			showProgress(true);
-			mAuthTask = new UserLoginTask();
-			mAuthTask.execute((Void) null);
-			startActivity(new Intent(this, MainActivity.class));
-			/*if(names.size() > 0 ) { 
-				//Login Successful
-				mLoginStatusMessageView.setText(R.string.login_progress_signing_in);
+			if(checkLogin())
+			{
 				showProgress(true);
 				mAuthTask = new UserLoginTask();
 				mAuthTask.execute((Void) null);
-				startActivity(new Intent(this, MainActivity.class));
+				startActivity(intent);
 			}
-			else
-			{
-				mUsernameView.setError(getString(R.string.error_invalid_email));
-				mPasswordView.setError(getString(R.string.error_incorrect_password));
-			}*/
 		}
+	}
+	private boolean checkLogin(){
+		String username=this.mUsernameView.getText().toString();
+		String password=this.mPasswordView.getText().toString();
+		this.dh=new DatabaseHelper(this);
+		List<String> names=this.dh.selectAll(username,password);
+		if(names.size()>0){
+			//Login successful
+			startLogin(username);
+			return true;
+		} else {
+			//Try again?
+			new AlertDialog.Builder(this)
+				.setTitle("Error")
+				.setMessage("Login failed")
+				.setNeutralButton("Try Again", new DialogInterface.OnClickListener(){
+					public void onClick(DialogInterface dialog, int which) {}
+				}).show();
+			return false;
+		}
+	}
+	private void startLogin(String username)
+	{
+		intent = new Intent(this, MainActivity.class);
+		intent.putExtra("User", username);
 	}
 	public void createUser() {
 		startActivity(new Intent(this, Register.class));
@@ -276,5 +293,10 @@ public class Login extends Activity {
 			mAuthTask = null;
 			showProgress(false);
 		}
+		
 	}
+    @Override
+    public void onBackPressed(){
+    	
+    }
 }

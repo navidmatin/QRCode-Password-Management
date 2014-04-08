@@ -4,7 +4,9 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.app.Activity;
-import android.os.AsyncTask;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -13,6 +15,7 @@ import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 /**
  * Activity which displays a register screen to the user, offering registration as
@@ -23,36 +26,31 @@ public class Register extends Activity {
 	 * A dummy authentication store containing known user names and passwords.
 	 * TODO: remove after connecting to a real authentication system.
 	 */
-	private static final String[] DUMMY_CREDENTIALS = new String[] {
-			"foo@example.com:hello", "bar@example.com:world" };
 
 	/**
 	 * The default email to populate the email field with.
 	 */
 	public static final String EXTRA_EMAIL = "com.example.android.authenticatordemo.extra.EMAIL";
 
-	/**
-	 * Keep track of the register task to ensure we can cancel it if requested.
-	 */
-	private UserregisterTask mAuthTask = null;
 
 	// Values for email and password at the time of the register attempt.
 	private String mUsername;
 	private String mPassword;
+	private String mPConfirm;
 
 	// UI references.
 	private EditText mUsernameView;
 	private EditText mPasswordView;
+	private EditText mPConfirmView;
 	private View mregisterFormView;
 	private View mregisterStatusView;
 	private TextView mregisterStatusMessageView;
+	private DatabaseHelper dh;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.register);
-		//Password confirmation
-		String mPasswordConfirmed;
 		
 		// Set up the register form.
 		mUsername = getIntent().getStringExtra(EXTRA_EMAIL);
@@ -72,8 +70,8 @@ public class Register extends Activity {
 						return false;
 					}
 				});
-		EditText mPasswordConfirmView=(EditText) findViewById(R.id.confirm_password);
-		mPasswordConfirmView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+		mPConfirmView = (EditText) findViewById(R.id.confirm_password);
+		mPConfirmView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
 			@Override
 			public boolean onEditorAction(TextView textView, int id,
 					KeyEvent keyEvent) {
@@ -102,9 +100,6 @@ public class Register extends Activity {
 	 * errors are presented and no actual register attempt is made.
 	 */
 	public void attemptregister() {
-		if (mAuthTask != null) {
-			return;
-		}
 
 		// Reset errors.
 		mUsernameView.setError(null);
@@ -113,6 +108,7 @@ public class Register extends Activity {
 		// Store values at the time of the register attempt.
 		mUsername = mUsernameView.getText().toString();
 		mPassword = mPasswordView.getText().toString();
+		mPConfirm = mPConfirmView.getText().toString();		
 
 		boolean cancel = false;
 		View focusView = null;
@@ -133,12 +129,34 @@ public class Register extends Activity {
 			// form field with an error.
 			focusView.requestFocus();
 		} else {
-			// Show a progress spinner, and kick off a background task to
-			// perform the user register attempt.
-			mregisterStatusMessageView.setText(R.string.register_progress_creating_new_user);
-			showProgress(true);
-			mAuthTask = new UserregisterTask();
-			mAuthTask.execute((Void) null);
+			
+			if ((mPassword.equals(mPConfirm)) && (!mUsername.equals(""))
+					&& (!mPassword.equals("")) && (!mPConfirm.equals(""))) {
+				this.dh = new DatabaseHelper(this);
+				this.dh.insert(mUsername, mPassword);
+				// this.labResult.setText("Added");
+				Toast.makeText(Register.this, "new record inserted",
+						Toast.LENGTH_SHORT).show();
+				mregisterStatusMessageView.setText(R.string.register_progress_creating_new_user);
+				showProgress(true);
+				startActivity(new Intent(this, Login.class));
+			} else if ((mUsername.equals("")) || (mPassword.equals(""))
+					|| (mPConfirm.equals(""))) {
+				Toast.makeText(Register.this, "Missing entry", Toast.LENGTH_SHORT)
+						.show();
+			} else if (!mPassword.equals(mPConfirm)) {
+				new AlertDialog.Builder(this)
+						.setTitle("Error")
+						.setMessage("passwords do not match")
+						.setNeutralButton("Try Again",
+								new DialogInterface.OnClickListener() {
+									public void onClick(DialogInterface dialog,
+											int which) {
+									}
+								})
+
+						.show();
+			}
 		}
 	}
 
@@ -183,52 +201,4 @@ public class Register extends Activity {
 		}
 	}
 
-	/**
-	 * Represents an asynchronous register/registration task used to authenticate
-	 * the user.
-	 */
-	public class UserregisterTask extends AsyncTask<Void, Void, Boolean> {
-		@Override
-		protected Boolean doInBackground(Void... params) {
-			// TODO: attempt authentication against a network service.
-
-			try {
-				// Simulate network access.
-				Thread.sleep(2000);
-			} catch (InterruptedException e) {
-				return false;
-			}
-
-			for (String credential : DUMMY_CREDENTIALS) {
-				String[] pieces = credential.split(":");
-				if (pieces[0].equals(mUsername)) {
-					// Account exists, return true if the password matches.
-					return pieces[1].equals(mPassword);
-				}
-			}
-
-			// TODO: register the new account here.
-			return true;
-		}
-
-		@Override
-		protected void onPostExecute(final Boolean success) {
-			mAuthTask = null;
-			showProgress(false);
-
-			if (success) {
-				finish();
-			} else {
-				mPasswordView
-						.setError(getString(R.string.error_incorrect_password));
-				mPasswordView.requestFocus();
-			}
-		}
-
-		@Override
-		protected void onCancelled() {
-			mAuthTask = null;
-			showProgress(false);
-		}
-	}
 }

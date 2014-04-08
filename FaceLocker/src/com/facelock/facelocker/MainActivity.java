@@ -34,20 +34,26 @@ import android.widget.Toast;
 
 public class MainActivity extends FragmentActivity implements ActionBar.OnNavigationListener {
 	private String key;
-	
+	private String username;
     /**
      * The serialization (saved instance state) Bundle key representing the
      * current dropdown position.
      */
     private static final String STATE_SELECTED_NAVIGATION_ITEM = "selected_navigation_item";
+    private static String cryptoSharedPref="com.facelock.facelocker.crypto";
+    private static String userSharedPref="com.facelock.facelocker.usershared";
+    
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+        username = getIntent().getStringExtra("User");//getting the username from login
+        
         //Getting saved preferences
-        SharedPreferences sharedPref = this.getSharedPreferences("com.facelock.facelocker.crypto",Context.MODE_PRIVATE);
+        cryptoSharedPref=cryptoSharedPref+username;
+        userSharedPref=userSharedPref+username;
+        SharedPreferences sharedPref = this.getSharedPreferences(cryptoSharedPref,Context.MODE_PRIVATE);
         String defaultvalue= null;
         key=sharedPref.getString("Crypto", defaultvalue);
        
@@ -72,7 +78,7 @@ public class MainActivity extends FragmentActivity implements ActionBar.OnNaviga
     }
 
     public void fillPasswords(){
-    	SharedPreferences file = getPreferences(MODE_PRIVATE);
+    	SharedPreferences file = getSharedPreferences(userSharedPref, Context.MODE_PRIVATE);
     	PasswordManager pwmanager = PasswordManager.getInstance(key);
     	pwmanager.getLogins(file);
     }
@@ -88,7 +94,7 @@ public class MainActivity extends FragmentActivity implements ActionBar.OnNaviga
     	String username = usernameField.getText().toString();
     	String password = passwordField.getText().toString();
     	
-    	SharedPreferences logins = getPreferences(MODE_PRIVATE);
+    	SharedPreferences logins = getSharedPreferences(userSharedPref, Context.MODE_PRIVATE);
     	
     	Boolean successfulSave = PasswordManager.getInstance(key).storeLogin(app, username, password, logins);
     	
@@ -104,7 +110,7 @@ public class MainActivity extends FragmentActivity implements ActionBar.OnNaviga
     
 
 	public void deleteLogins() {
-		SharedPreferences logins = getPreferences(MODE_PRIVATE);
+		SharedPreferences logins = getSharedPreferences(userSharedPref,Context.MODE_PRIVATE);
 		Boolean successfulDelete = PasswordManager.deleteAll(logins);
 		
 		if (successfulDelete) {
@@ -192,7 +198,7 @@ public class MainActivity extends FragmentActivity implements ActionBar.OnNaviga
                             getApplicationContext(),
                             PasswordManager.getInstance(key).getPassword(parent.getExpandableListAdapter().getGroup(groupPosition).toString(), 
                             		parent.getExpandableListAdapter().getChild(groupPosition, childPosition).toString(), 
-                            		getPreferences(MODE_PRIVATE)),
+                            		getSharedPreferences(userSharedPref,Context.MODE_PRIVATE)),
                             		//parent.getExpandableListAdapter().getGroup(groupPosition)
                                     //+ " : "
                                     //+ parent.getExpandableListAdapter().getChild(groupPosition, childPosition),
@@ -261,7 +267,7 @@ public class MainActivity extends FragmentActivity implements ActionBar.OnNaviga
     protected void onStop()
     {
     	super.onStop();
-    	SharedPreferences sharedPref = this.getSharedPreferences("com.facelock.facelocker.crypto",Context.MODE_PRIVATE);
+    	SharedPreferences sharedPref = this.getSharedPreferences(cryptoSharedPref,Context.MODE_PRIVATE);
     	SharedPreferences.Editor editor=sharedPref.edit();
     	try {
 			editor.putString("Crypto", PasswordCrypto.getKey());
@@ -270,6 +276,10 @@ public class MainActivity extends FragmentActivity implements ActionBar.OnNaviga
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+    	
+    }
+    @Override
+    public void onBackPressed(){
     	
     }
 
