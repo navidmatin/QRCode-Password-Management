@@ -8,27 +8,19 @@ import android.annotation.TargetApi;
 import android.app.ActionBar;
 import android.os.Bundle;
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Build;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
-import android.support.v4.app.NavUtils;
-import android.util.Log;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ExpandableListView;
 import android.widget.ExpandableListView.OnChildClickListener;
-import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -193,9 +185,6 @@ public class MainActivity extends FragmentActivity implements ActionBar.OnNaviga
                             PasswordManager.getInstance(key).getPassword(parent.getExpandableListAdapter().getGroup(groupPosition).toString(), 
                             		parent.getExpandableListAdapter().getChild(groupPosition, childPosition).toString(), 
                             		getPreferences(MODE_PRIVATE)),
-                            		//parent.getExpandableListAdapter().getGroup(groupPosition)
-                                    //+ " : "
-                                    //+ parent.getExpandableListAdapter().getChild(groupPosition, childPosition),
                             Toast.LENGTH_SHORT)
                             .show();
                     return false;
@@ -264,7 +253,7 @@ public class MainActivity extends FragmentActivity implements ActionBar.OnNaviga
     	SharedPreferences sharedPref = this.getSharedPreferences("com.facelock.facelocker.crypto",Context.MODE_PRIVATE);
     	SharedPreferences.Editor editor=sharedPref.edit();
     	try {
-			editor.putString("Crypto", PasswordCrypto.getKey());
+			//editor.putString("Crypto", PasswordCrypto.getKey());
 			editor.commit();
 		} catch (Exception e) {
 			// TODO Auto-generated catch block

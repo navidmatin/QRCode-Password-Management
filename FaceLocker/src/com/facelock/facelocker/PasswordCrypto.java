@@ -1,85 +1,105 @@
 package com.facelock.facelocker;
 
-import java.io.File;
-import java.io.FileOutputStream;
+import java.nio.charset.Charset;
+import java.security.GeneralSecurityException;
 import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 
+import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
-import javax.crypto.KeyGenerator;
-import javax.crypto.NoSuchPaddingException;
-import javax.crypto.SecretKey;
+import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
-import android.content.SharedPreferences;
 import android.util.Base64;
-
-import com.sun.mail.util.BASE64EncoderStream;
-import com.sun.mail.util.BASE64DecoderStream;
 
 public class PasswordCrypto {
 
-	private static final String ENCRYPTION_KEY = "encryptionKey";
-	private static SecretKey secretKey;
-	private static Cipher eCipher;
-	private static Cipher dCipher;
-	
-	public PasswordCrypto(String key) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidKeyException {
-		if(key==null)
-		{
-			try {
-				secretKey = KeyGenerator.getInstance("DES").generateKey();
-				eCipher = Cipher.getInstance("DES");
-				dCipher = Cipher.getInstance("DES");
-				
-				eCipher.init(Cipher.ENCRYPT_MODE, secretKey);
-				dCipher.init(Cipher.DECRYPT_MODE, secretKey);
-			} catch (NoSuchAlgorithmException e) {
-				throw new NoSuchAlgorithmException();
-			} catch (NoSuchPaddingException e) {
-				 throw new NoSuchPaddingException();
-			} catch (InvalidKeyException e) {
-				throw new InvalidKeyException();
-			}
-		}
-		else
-		{
-			try {
-				setKey(key);
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-	}
-	
-	public String encrypt (String str) throws Exception {
-		try {
-			byte[] utf8 = str.getBytes("UTF8");
-			byte[] enc = eCipher.doFinal(utf8);
-			enc = BASE64EncoderStream.encode(enc);
-			return new String(enc);
-		} catch (Exception e) {
-			throw e;
-		}
-		
-	}
-	
-	public String decrypt (String str) throws Exception {
-		try {
-			byte[] dec = BASE64DecoderStream.decode(str.getBytes());
-			byte[] utf8 = dCipher.doFinal(dec);
-			return new String(utf8, "UTF8");
-		} catch (Exception e) {
-			throw e;
-		}
-	}
-	public static String getKey() throws Exception{
-		String s = Base64.encodeToString(secretKey.getEncoded(), Base64.DEFAULT);
-		return s;
-	}
-	public static void setKey(String key) throws Exception {
-		byte[] encodedKey = Base64.decode(key, Base64.DEFAULT);
-		secretKey= new SecretKeySpec(encodedKey, 0, encodedKey.length, "DES");
-	}
+	public static String encrypt(final String plainMessage,
+            final String symKeyHex) {
+        final byte[] symKeyData = Base64.decode(symKeyHex, 0);
+
+        final byte[] encodedMessage = plainMessage.getBytes(Charset
+                .forName("UTF-8"));
+        try {
+            final Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+            final int blockSize = cipher.getBlockSize();
+
+            // create the key
+            final SecretKeySpec symKey = new SecretKeySpec(symKeyData, "AES");
+
+            // generate random IV using block size (possibly create a method for
+            // this)
+            final byte[] ivData = new byte[blockSize];
+            final SecureRandom rnd = SecureRandom.getInstance("SHA1PRNG");
+            rnd.nextBytes(ivData);
+            final IvParameterSpec iv = new IvParameterSpec(ivData);
+
+            cipher.init(Cipher.ENCRYPT_MODE, symKey, iv);
+
+            final byte[] encryptedMessage = cipher.doFinal(encodedMessage);
+
+            // concatenate IV and encrypted message
+            final byte[] ivAndEncryptedMessage = new byte[ivData.length
+                    + encryptedMessage.length];
+            System.arraycopy(ivData, 0, ivAndEncryptedMessage, 0, blockSize);
+            System.arraycopy(encryptedMessage, 0, ivAndEncryptedMessage,
+                    blockSize, encryptedMessage.length);
+
+            final String ivAndEncryptedMessageBase64 = Base64
+                    .encodeToString(ivAndEncryptedMessage, 0);
+
+            return ivAndEncryptedMessageBase64;
+        } catch (InvalidKeyException e) {
+            throw new IllegalArgumentException(
+                    "key argument does not contain a valid AES key");
+        } catch (GeneralSecurityException e) {
+            throw new IllegalStateException(
+                    "Unexpected exception during encryption", e);
+        }
+    }
+
+    public static String decrypt(final String ivAndEncryptedMessageBase64,
+            final String symKeyHex) {
+        final byte[] symKeyData = Base64.decode(symKeyHex, 0);
+
+        final byte[] ivAndEncryptedMessage = Base64
+                .decode(ivAndEncryptedMessageBase64, 0);
+        try {
+            final Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+            final int blockSize = cipher.getBlockSize();
+
+            // create the key
+            final SecretKeySpec symKey = new SecretKeySpec(symKeyData, "AES");
+
+            // retrieve random IV from start of the received message
+            final byte[] ivData = new byte[blockSize];
+            System.arraycopy(ivAndEncryptedMessage, 0, ivData, 0, blockSize);
+            final IvParameterSpec iv = new IvParameterSpec(ivData);
+
+            // retrieve the encrypted message itself
+            final byte[] encryptedMessage = new byte[ivAndEncryptedMessage.length
+                    - blockSize];
+            System.arraycopy(ivAndEncryptedMessage, blockSize,
+                    encryptedMessage, 0, encryptedMessage.length);
+
+            cipher.init(Cipher.DECRYPT_MODE, symKey, iv);
+
+            final byte[] encodedMessage = cipher.doFinal(encryptedMessage);
+
+            // concatenate IV and encrypted message
+            final String message = new String(encodedMessage,
+                    Charset.forName("UTF-8"));
+
+            return message;
+        } catch (InvalidKeyException e) {
+            throw new IllegalArgumentException(
+                    "key argument does not contain a valid AES key");
+        } catch (BadPaddingException e) {
+            // you'd better know about padding oracle attacks
+            return null;
+        } catch (GeneralSecurityException e) {
+            throw new IllegalStateException(
+                    "Unexpected exception during decryption", e);
+        }
+    }
 }
