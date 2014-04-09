@@ -51,6 +51,8 @@ public class Register extends Activity {
 	private View mregisterStatusView;
 	private TextView mregisterStatusMessageView;
 	private DatabaseHelper dh;
+	private QRDatabaseHelper dhqr;
+	private String qrPassword;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -62,6 +64,7 @@ public class Register extends Activity {
 		ImageView imageView = (ImageView) findViewById(R.id.qrCode);
 
 		String qrData = PasswordGenerator.Generate(20, 30);
+		qrPassword=qrData;
 		int qrCodeDimention = 500;
 
 		QRCodeEncoder qrCodeEncoder = new QRCodeEncoder(qrData, null,
@@ -166,7 +169,9 @@ public class Register extends Activity {
 			if ((mPassword.equals(mPConfirm)) && (!mEmail.equals(""))
 					&& (!mPassword.equals("")) && (!mPConfirm.equals(""))) {
 				this.dh = new DatabaseHelper(this);
+				this.dhqr= new QRDatabaseHelper(this);
 				this.dh.insert(mEmail, mPassword);
+				this.dhqr.insert(mEmail, qrPassword);
 				// this.labResult.setText("Added");
 				Toast.makeText(Register.this, "new record inserted",
 						Toast.LENGTH_SHORT).show();

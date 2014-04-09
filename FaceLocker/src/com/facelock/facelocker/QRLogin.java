@@ -3,6 +3,9 @@ package com.facelock.facelocker;
 
 import java.util.List;
 
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.WriterException;
+
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
@@ -11,6 +14,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -20,6 +24,7 @@ import android.view.Menu;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -27,7 +32,7 @@ import android.widget.Toast;
  * Activity which displays a login screen to the user, offering registration as
  * well.
  */
-public class Login extends Activity {
+public class QRLogin extends Activity {
 	/**
 	 * A dummy authentication store containing known user names and passwords.
 	 * TODO: remove after connecting to a real authentication system.
@@ -43,17 +48,15 @@ public class Login extends Activity {
 	/**
 	 * Keep track of the login task to ensure we can cancel it if requested.
 	 */
-	private DatabaseHelper dh;
+	private QRDatabaseHelper dh;
 	private UserLoginTask mAuthTask = null;
 
 	Intent intent;
 	// Values for email and password at the time of the login attempt.
 	private String mEmail;
-	private String mPassword;
+	public String mPassword;
 
 	// UI references.
-	private EditText mEmailView;
-	private EditText mPasswordView;
 	private View mLoginFormView;
 	private View mLoginStatusView;
 	private TextView mLoginStatusMessageView;
@@ -62,47 +65,28 @@ public class Login extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-		setContentView(R.layout.login);
+		setContentView(R.layout.qr_login);
 
-		// Set up the login form.
-		mEmail = getIntent().getStringExtra(EXTRA_EMAIL);
-		mEmailView = (EditText) findViewById(R.id.username);
-		mEmailView.setText(mEmail);
-
-		mPasswordView = (EditText) findViewById(R.id.password);
-		mPasswordView
-				.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-					@Override
-					public boolean onEditorAction(TextView textView, int id,
-							KeyEvent keyEvent) {
-						if (id == R.id.login || id == EditorInfo.IME_NULL) {
-							attemptLogin();
-							return true;
-						}
-						return false;
-					}
-				});
-
+		mLoginStatusMessageView = (TextView) findViewById(R.id.login_status_message);
 		mLoginFormView = findViewById(R.id.login_form);
 		mLoginStatusView = findViewById(R.id.login_status);
-		mLoginStatusMessageView = (TextView) findViewById(R.id.login_status_message);
-
-		findViewById(R.id.sign_in_button).setOnClickListener(
+		findViewById(R.id.sign_in_button_qr).setOnClickListener(
 				new View.OnClickListener() {
 					@Override
 					public void onClick(View view) {
-						attemptLogin();
+						//Scanning QR Code
+						intent = new Intent("com.google.zxing.client.android.SCAN");
+						intent.putExtra("SCAN_MODE", "QR_CODE_MODE");
+						startActivityForResult(intent, 0);
 					}
 				});
-		findViewById(R.id.register_button).setOnClickListener(
-				new View.OnClickListener() {
-					
-					@Override
-					public void onClick(View v) {
-						createUser();
-						
-					}
-				});
+		findViewById(R.id.sign_in_button).setOnClickListener(new View.OnClickListener(){
+			@Override
+			public void onClick(View view) {
+				attemptLogin();
+			}
+		});
+		
 	}
 
 	@Override
@@ -118,17 +102,9 @@ public class Login extends Activity {
 	 * errors are presented and no actual login attempt is made.
 	 */
 	public void attemptLogin() {
-		if (mAuthTask != null) {
-			return;
-		}
 
-		// Reset errors.
-		mEmailView.setError(null);
-		mPasswordView.setError(null);
 
-		// Store values at the time of the login attempt.
-		mEmail = mEmailView.getText().toString();
-		mPassword = mPasswordView.getText().toString();
+		
 		/*
 		try {
 			String encryptedmPassword = PasswordCrypto.encrypt(mPassword, "000102030405060708090A0B0C0D0E0F");
@@ -146,27 +122,7 @@ public class Login extends Activity {
 
 		boolean cancel = false;
 		View focusView = null;
-
-		// Check for a valid password.
-		if (TextUtils.isEmpty(mPassword)) {
-			mPasswordView.setError(getString(R.string.error_field_required));
-			focusView = mPasswordView;
-			cancel = true;
-		} else if (mPassword.length() < 4) {
-			mPasswordView.setError(getString(R.string.error_invalid_password));
-			focusView = mPasswordView;
-			cancel = true;
-		}
-		// Check for a valid email address.
-				if (TextUtils.isEmpty(mEmail)) {
-					mEmailView.setError(getString(R.string.error_field_required));
-					focusView = mEmailView;
-					cancel = true;
-				} else if (!mEmail.contains("@")) {
-					mEmailView.setError(getString(R.string.error_invalid_email));
-					focusView = mEmailView;
-					cancel = true;
-				}
+		
 		
 		if (cancel) {
 			// There was an error; don't attempt login and focus the first
@@ -186,11 +142,37 @@ public class Login extends Activity {
 			}
 		}
 	}
+	@Override
+	protected void onResume(){
+		super.onResume();
+		ImageView imageView = (ImageView) findViewById(R.id.qrCodeScanned);
+		QRCodeEncoder qrCodeEncoder = new QRCodeEncoder(mPassword, null,
+		        Contents.Type.TEXT, BarcodeFormat.QR_CODE.toString(), 500);
+
+		try {
+		    Bitmap bitmap = qrCodeEncoder.encodeAsBitmap();
+		    imageView.setImageBitmap(bitmap);
+		} catch (WriterException e) {
+		    e.printStackTrace();
+		}
+	}
+	public void onActivityResult(int requestCode, int resultCode, Intent intent) {
+		if(requestCode==0) {
+			if(resultCode == RESULT_OK){
+				mPassword = intent.getStringExtra("SCAN_RESULT");
+				String format = intent.getStringExtra("SCAN_RESULT_FORMAT");
+			} else if(resultCode==RESULT_CANCELED) {
+				//Handle cancel
+			}
+		}
+	}
 	private boolean checkLogin(){
-		String username=this.mEmailView.getText().toString();
-		String password=this.mPasswordView.getText().toString();
-		this.dh=new DatabaseHelper(this);
-		List<String> names=this.dh.selectAll(username,password);
+		
+		
+		String username = getIntent().getStringExtra("User");
+		mEmail=username;
+		this.dh=new QRDatabaseHelper(this);
+		List<String> names=this.dh.selectAll(username,mPassword);
 		if(names.size()>0){
 			//Login successful
 			startLogin(username);
@@ -201,18 +183,20 @@ public class Login extends Activity {
 				.setTitle("Error")
 				.setMessage("Login failed")
 				.setNeutralButton("Try Again", new DialogInterface.OnClickListener(){
-					public void onClick(DialogInterface dialog, int which) {}
+					public void onClick(DialogInterface dialog, int which) {
+						failedLogin();
+					}
 				}).show();
 			return false;
 		}
 	}
+	private void failedLogin(){
+		startActivity(new Intent(this, Login.class));
+	}
 	private void startLogin(String username)
 	{
-		intent = new Intent(this, QRLogin.class);
+		intent = new Intent(this, MainActivity.class);
 		intent.putExtra("User", username);
-	}
-	public void createUser() {
-		startActivity(new Intent(this, Register.class));
 	}
 	/**
 	 * Shows the progress UI and hides the login form.
@@ -290,11 +274,7 @@ public class Login extends Activity {
 
 			if (success) {
 				finish();
-			} else {
-				mPasswordView
-						.setError(getString(R.string.error_incorrect_password));
-				mPasswordView.requestFocus();
-			}
+			} 
 		}
 
 		@Override
