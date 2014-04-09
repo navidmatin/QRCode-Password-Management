@@ -18,6 +18,10 @@
             android:label="@string/app_name" >
         </activity>
         <activity
+            android:name="com.facelock.facelocker.QRLogin"
+            android:label="@string/title_activity_login" >
+        </activity>
+        <activity
             android:name="com.facelock.facelocker.Login"
             android:label="@string/title_activity_login"
             android:windowSoftInputMode="adjustResize|stateVisible" >
@@ -27,11 +31,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity
-            android:name="com.facelock.facelocker.QRLogin"
-            android:label="@string/title_activity_login"
-            android:windowSoftInputMode="adjustResize|stateVisible" >
-            </activity>
+
         <activity
             android:name="com.facelock.facelocker.Register"
             android:label="@string/title_activity_register"
