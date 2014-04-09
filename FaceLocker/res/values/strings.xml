@@ -17,5 +17,8 @@
     <string name="search">Search</string>
     <string name="anew">Add New Password</string>
     <string name="al">Account Login</string>
+    <string name="ar">Account Registration</string>
+    <string name="b">Back</string>
+    <string name="r">Register</string>
 
 </resources>

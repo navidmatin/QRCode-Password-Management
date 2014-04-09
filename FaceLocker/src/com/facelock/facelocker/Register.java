@@ -110,7 +110,13 @@ public class Register extends Activity {
 		mregisterFormView = findViewById(R.id.register_form);
 		mregisterStatusView = findViewById(R.id.register_status);
 		mregisterStatusMessageView = (TextView) findViewById(R.id.register_status_message);
-
+		findViewById(R.id.Back).setOnClickListener(
+				new View.OnClickListener() {
+					@Override
+					public void onClick(View view) {
+						returnToLogin();
+					}
+				});
 		findViewById(R.id.create_new_user_btn).setOnClickListener(
 				new View.OnClickListener() {
 					@Override
@@ -119,6 +125,14 @@ public class Register extends Activity {
 					}
 				});
 	}
+	
+	/**
+	 * Returns to the login activity
+	 */
+	public void returnToLogin(){
+		startActivity(new Intent(this, Login.class));
+	}
+	
 	/**
 	 * Attempts to sign in or register the account specified by the register form.
 	 * If there are form errors (invalid email, missing fields, etc.), the

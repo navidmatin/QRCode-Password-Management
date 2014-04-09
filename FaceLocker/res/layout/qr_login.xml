@@ -17,7 +17,7 @@
             style="?android:attr/progressBarStyleLarge"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp" />
+            android:layout_marginBottom="8dp" />s
 
         <TextView
             android:id="@+id/login_status_message"
@@ -56,19 +56,19 @@
 			    android:layout_below="@+id/sign_in_button_qr"
 			    android:layout_height="wrap_content"
 			    android:layout_centerHorizontal="true"/>
+
             <Button
                 android:id="@+id/sign_in_button"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_centerHorizontal="true"
                 android:layout_below="@+id/qrCodeScanned"
+                android:layout_centerHorizontal="true"
                 android:layout_gravity="center"
                 android:layout_marginTop="16dp"
                 android:layout_weight="4.90"
                 android:paddingLeft="32dp"
                 android:paddingRight="32dp"
                 android:text="Sign in (Fi)" />
-            
 
         </RelativeLayout>
 
