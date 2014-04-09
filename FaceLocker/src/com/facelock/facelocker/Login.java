@@ -208,7 +208,7 @@ public class Login extends Activity {
 	}
 	private void startLogin(String username)
 	{
-		intent = new Intent(this, QRLogin.class);
+		intent = new Intent(this, MainActivity.class);
 		intent.putExtra("User", username);
 	}
 	public void createUser() {

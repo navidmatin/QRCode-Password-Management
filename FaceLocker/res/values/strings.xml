@@ -14,5 +14,8 @@
     <string name="Login">Login</string>
     <string name="register">Register</string>
     <string name="generatePassword">Generate Password</string>
+    <string name="search">Search</string>
+    <string name="anew">Add New Password</string>
+    <string name="al">Account Login</string>
 
 </resources>

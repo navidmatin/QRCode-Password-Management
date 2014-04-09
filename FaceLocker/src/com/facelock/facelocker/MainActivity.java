@@ -14,6 +14,8 @@ import android.content.SharedPreferences;
 import android.os.Build;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.View;
@@ -27,7 +29,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 public class MainActivity extends FragmentActivity implements ActionBar.OnNavigationListener {
-	private String key;
+	private static String key;
 	private String username;
     /**
      * The serialization (saved instance state) Bundle key representing the
@@ -38,10 +40,14 @@ public class MainActivity extends FragmentActivity implements ActionBar.OnNaviga
     private static String userSharedPref;
     private Toast randPass;
     private CountDownTimer timer;
+    private static ExpandableListAdapter listAdapter;
+    private static ExpandableListView listView;
+    private static MainActivity instance;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        instance = this;
         setContentView(R.layout.activity_main);
         username = getIntent().getStringExtra("User");//getting the username from login
         
@@ -200,15 +206,53 @@ public class MainActivity extends FragmentActivity implements ActionBar.OnNaviga
 		}
         if(position == 0){
         	fillPasswords();
-        	ExpandableListView listView = (ExpandableListView) findViewById(R.id.pwGroupList);
+        	MainActivity.listView = (ExpandableListView) findViewById(R.id.pwGroupList);
             // preparing list data
             HashMap<String, List<String>> temp = PasswordManager.getInstance(key).getMap();
             List<String> keys = new ArrayList<String>();
             if(PasswordManager.getInstance(key).size() == 0)
             	Toast.makeText(this, "No Saved Passwords. \n Click \"Add New\" to Add a Password. ", Toast.LENGTH_LONG).show();
             keys.addAll(temp.keySet());
-            ExpandableListAdapter listAdapter = new ExpandableListAdapter(this, keys, temp);
-        
+            MainActivity.listAdapter = new ExpandableListAdapter(this, keys, temp);
+            TextView search = (TextView)findViewById(R.id.username);
+            search.addTextChangedListener(new TextWatcher() {
+            	private HashMap<String, List<String>> pws = PasswordManager.getInstance(key).getMap();
+            	   public void afterTextChanged(Editable s) {}
+
+            	   public void beforeTextChanged(CharSequence s, int start,
+            	     int count, int after) {
+            	   }
+
+            	   public void onTextChanged(CharSequence s, int start,
+            	     int before, int count) {
+            		   	  HashMap<String, List<String>> temp = (HashMap<String, List<String>>) pws.clone();
+            	    	  String username = s.toString();
+            	    	  
+            	    	  List<String> keys = new ArrayList<String>();
+            	          keys.addAll(pws.keySet());
+            	          if(username.length() != 0){
+	            	          for(int i = keys.size()-1; i >=0; i--){
+	            	        	  String key = keys.get(i);
+	            	        	  ArrayList<String> names = new ArrayList<String>();
+	            	        	  names.addAll(temp.get(key));
+	            	        	  for(int j = names.size()-1; j >= 0; j--){
+	            	        		  if(!names.get(j).equals(username)){
+	            	        			  names.remove(j);
+	            	        		  }
+	            	        	  }
+	            	        	  if(names.size() == 0){
+	            	        		  temp.remove(key);
+	            	        		  keys.remove(i);
+	            	        	  }else{
+	            	        		  temp.put(key, names);
+	            	        	  }
+	            	          }
+            	          }
+            	          MainActivity.listAdapter = new ExpandableListAdapter(MainActivity.instance, keys, temp);
+            	          MainActivity.listView.setAdapter(MainActivity.listAdapter);
+            	   }
+            	  });
+            
             listView.setOnChildClickListener(new OnChildClickListener() {
             	 
                 @Override
