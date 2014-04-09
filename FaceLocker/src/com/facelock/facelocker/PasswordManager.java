@@ -131,6 +131,10 @@ public class PasswordManager {
 		return val;
 	}
 	
+	public int size(){
+		return passwordMap.size();
+	}
+	
 	public String[] getApplications(){
 		return passwordMap.keySet().toArray(new String[passwordMap.size()]);
 	}

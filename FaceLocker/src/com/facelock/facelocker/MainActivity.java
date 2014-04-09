@@ -7,6 +7,7 @@ import java.util.List;
 import android.annotation.TargetApi;
 import android.app.ActionBar;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -35,7 +36,8 @@ public class MainActivity extends FragmentActivity implements ActionBar.OnNaviga
     private static final String STATE_SELECTED_NAVIGATION_ITEM = "selected_navigation_item";
     private static String cryptoSharedPref;
     private static String userSharedPref;
-    
+    private Toast randPass;
+    private CountDownTimer timer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -100,6 +102,11 @@ public class MainActivity extends FragmentActivity implements ActionBar.OnNaviga
     		Toast.makeText(this, "Save Unsuccessful", Toast.LENGTH_SHORT).show();
     	}
     	
+		if(randPass!= null)
+		{
+			randPass.cancel();
+			timer.cancel();
+		}
     	getActionBar().setSelectedNavigationItem(0);
     	onNavigationItemSelected(0, 0);
     }
@@ -118,9 +125,21 @@ public class MainActivity extends FragmentActivity implements ActionBar.OnNaviga
 	
 	public void generatePassword (View view) {
 		String randomPassword = PasswordGenerator.Generate(8, 16);
-		TextView visiblePasswordField = (TextView) findViewById(R.id.randomPassword);
+		if(randPass!= null)
+		{
+			randPass.cancel();
+			timer.cancel();
+		}
+    	randPass = Toast.makeText(this,"Random Password: " + randomPassword , Toast.LENGTH_LONG);
+    	randPass.show();
+    	timer = new CountDownTimer(700000, 1000)
+    	{
+
+    	    public void onTick(long millisUntilFinished) {randPass.show();}
+    	    public void onFinish() {randPass.show();}
+
+    	}.start();
 		EditText passwordField = (EditText) findViewById(R.id.editText2);
-		visiblePasswordField.setText(randomPassword);
 		passwordField.setText(randomPassword);
 	}
 
@@ -174,14 +193,19 @@ public class MainActivity extends FragmentActivity implements ActionBar.OnNaviga
                 .replace(R.id.container, fragment)
                 .commit();
         this.getSupportFragmentManager().executePendingTransactions();
-        
+		if(randPass!= null)
+		{
+			randPass.cancel();
+			timer.cancel();
+		}
         if(position == 0){
-        	
         	fillPasswords();
         	ExpandableListView listView = (ExpandableListView) findViewById(R.id.pwGroupList);
             // preparing list data
             HashMap<String, List<String>> temp = PasswordManager.getInstance(key).getMap();
             List<String> keys = new ArrayList<String>();
+            if(PasswordManager.getInstance(key).size() == 0)
+            	Toast.makeText(this, "No Saved Passwords. \n Click \"Add New\" to Add a Password. ", Toast.LENGTH_LONG).show();
             keys.addAll(temp.keySet());
             ExpandableListAdapter listAdapter = new ExpandableListAdapter(this, keys, temp);
         
@@ -196,7 +220,7 @@ public class MainActivity extends FragmentActivity implements ActionBar.OnNaviga
                             		parent.getExpandableListAdapter().getChild(groupPosition, childPosition).toString(), 
                             		getSharedPreferences(userSharedPref,Context.MODE_PRIVATE)),
 
-                            Toast.LENGTH_SHORT)
+                            Toast.LENGTH_LONG)
                             .show();
                     return false;
                 }
