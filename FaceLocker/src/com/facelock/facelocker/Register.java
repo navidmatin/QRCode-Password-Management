@@ -1,5 +1,7 @@
 package com.facelock.facelocker;
 
+import java.net.URI;
+
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.WriterException;
 
@@ -8,11 +10,14 @@ import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.ContentResolver;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.View;
@@ -53,7 +58,8 @@ public class Register extends Activity {
 	private DatabaseHelper dh;
 	private QRDatabaseHelper dhqr;
 	private String qrPassword;
-
+	private Bitmap bitmap;
+	private boolean finished=false;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -71,8 +77,11 @@ public class Register extends Activity {
 		        Contents.Type.TEXT, BarcodeFormat.QR_CODE.toString(), qrCodeDimention);
 
 		try {
-		    Bitmap bitmap = qrCodeEncoder.encodeAsBitmap();
+			bitmap = qrCodeEncoder.encodeAsBitmap();
 		    imageView.setImageBitmap(bitmap);
+		    
+		    int i=0;
+
 		} catch (WriterException e) {
 		    e.printStackTrace();
 		}
@@ -173,7 +182,8 @@ public class Register extends Activity {
 			focusView = mEmailView;
 			cancel = true;
 		}
-		
+	//	if(bitmap!=null)
+			
 		if (cancel) {
 			// There was an error; don't attempt register and focus the first
 			// form field with an error.
@@ -191,6 +201,8 @@ public class Register extends Activity {
 						Toast.LENGTH_SHORT).show();
 				mregisterStatusMessageView.setText(R.string.register_progress_creating_new_user);
 				showProgress(true);
+				finished=true;
+				 
 				startActivity(new Intent(this, Login.class));
 			} else if ((mEmail.equals("")) || (mPassword.equals(""))
 					|| (mPConfirm.equals(""))) {
@@ -251,6 +263,13 @@ public class Register extends Activity {
 			mregisterStatusView.setVisibility(show ? View.VISIBLE : View.GONE);
 			mregisterFormView.setVisibility(show ? View.GONE : View.VISIBLE);
 		}
+		
+	}
+	@Override
+	public void onPause(){
+		super.onPause();
+		if(finished)
+			Email.email(bitmap, this); 
 	}
 
 }
