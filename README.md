@@ -11,10 +11,10 @@ The first step verification is a simple username and password and second step is
 
 
 
-An app by
-=========
- [Hector Medina](https://github.com/HectorMF)
- [Navid Seyed Matin](https://github.com/navidmatin)
- [TJ Van Earten](https://github.com/tjvaneerten)
+####An app by:
+
+ * [Hector Medina](https://github.com/HectorMF)
+ * [Navid Seyed Matin](https://github.com/navidmatin)
+ * [TJ Van Earten](https://github.com/tjvaneerten)
 
 
