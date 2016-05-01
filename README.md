@@ -1,4 +1,4 @@
-QRCode-Password-Management
+Class Project: QRCode-Password-Management
 ==========================
 
 A Password Management App with QRCode verification system!
